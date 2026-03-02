@@ -9,9 +9,12 @@ pygame.font.init()
 my_font = pygame.font.SysFont('Times New Roman', 12)
 
 
-BLUE = (0, 0, 255)
+BLUE = (137, 207, 240)
 WHITE = (255, 255, 255)
+YELLOW = (151, 141, 67)
+GREEN = (144, 178, 112)
 RED = (255, 0, 0)
+BLACK = (0, 0, 0)
 
 # Set up the game window
 screen = pygame.display.set_mode((400, 300))
@@ -31,10 +34,8 @@ move_left = True
 
 rectX = 100
 rectY = 100
-enemyX = 300
-enemyY = 50
 #pygame.draw.rect(screen, WHITE, (rectX, rectY, 30, 30), 5, 5)
-pygame.draw.rect(screen, RED, (enemyX, enemyY, 30, 30), 5, 5)
+#pygame.draw.rect(screen, RED, (enemyX, enemyY, 30, 30), 5, 5)
 pygame.display.flip()
 
 #outline_list = pygame.sprite.Group()
@@ -51,20 +52,64 @@ class Border (pygame.sprite.Sprite):
 class Player (pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.Surface((30, 30))
+        self.image = pygame.Surface((10, 10))
         self.image.fill(WHITE)
         self.rect = self.image.get_rect()
-        self.rect.x = 30
-        self.rect.y = 30
+        self.rect.x = 50
+        self.rect.y = 50
+    
+class Enemies (pygame.sprite.Sprite):
+    def __init__(self, x_pos, y_pos):
+        super().__init__()
+        self.image = pygame.Surface((10, 10), pygame.SRCALPHA)
+        self.rect = self.image.get_rect()
+        self.rect.x = x_pos
+        self.rect.y = y_pos
+        self.radius = 5
+
+        pygame.draw.circle(self.image, RED, (10//2, 10//2), 5)
+
+class Coins (pygame.sprite.Sprite):
+    def __init__(self, x_pos, y_pos):
+        super().__init__()
+        self.image = pygame.Surface((10, 10), pygame.SRCALPHA)
+        self.rect = self.image.get_rect()
+        self.rect.x = x_pos
+        self.rect.y = y_pos
+        self.radius = 5
+
+        pygame.draw.circle(self.image, YELLOW, (10//2, 10//2), 5)
+
+class Finish (pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((20, 280))
+        self.image.fill(GREEN)
+        self.rect = self.image.get_rect()
+        self.rect.x = 370
+        self.rect.y = 10
 
 player = Player ()
+finish = Finish ()
 border_list = pygame.sprite.Group()
+enemy_list = pygame.sprite.Group()
+coins_list = pygame.sprite.Group()
 
+for i in range(9):
+    enemy = Enemies(300, 25 + i*30)
+    enemy_list.add(enemy)
 
-border1 = Border(RED, 400, 30, 0, 0)
-border2 = Border(RED, 30, 300, 0, 0)
-border3 = Border(RED, 30, 300, 370, 0)
-border4 = Border(RED, 400, 30, 0, 270)
+for i in range(9):
+    coin = Coins(250, 25 + i*30)
+    coins_list.add(coin)
+
+border_thickness = 10
+right_border_edge = 300
+bottom_border_edge = 400
+border1 = Border(BLACK, bottom_border_edge, border_thickness, 0, 0)
+border2 = Border(BLACK, border_thickness, 300, 0, 0)
+border3 = Border(BLACK, border_thickness, 300, bottom_border_edge - border_thickness, 0)
+border4 = Border(BLACK, bottom_border_edge, border_thickness, 0, right_border_edge - border_thickness)
 border_list.add(border1)
 border_list.add(border2)
 border_list.add(border3)
@@ -83,62 +128,70 @@ right_text = my_font.render('Right!', True, (255, 255, 255))
 # Game loop
 running = True
 while running:
-    clock.tick(40)
+    clock.tick(20)
     for event in pygame.event.get():
         if event.type == move_side_event:
             if move_left:
-                enemyX -= 5
+                for enemy in enemy_list:
+                    enemy.rect.x -= 5
             else:
-                enemyX += 5
+                for enemy in enemy_list:
+                    enemy.rect.x += 5
 
-            if enemyX < 30:
-                move_left = False
-            if enemyX > 370:
-                move_left = True
+            for enemy in enemy_list:
+                if enemy.rect.x < 50:
+                    move_left = False
+                if enemy.rect.x > 350:
+                    move_left = True
 
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_q:
                 running = False
             if event.key == pygame.K_w:
-                player.rect.y -= 10
+                player.rect.y -= 5
                 print("Move the character forwards")
                 if pygame.sprite.spritecollide(player, border_list, False):
-                    player.rect.y += 10
+                    player.rect.y += 5
             elif event.key == pygame.K_s:
-                player.rect.y += 10
+                player.rect.y += 5
                 print("Move the character backwards")
                 if pygame.sprite.spritecollide(player, border_list, False):
-                    player.rect.y -= 10
+                    player.rect.y -= 5
             elif event.key == pygame.K_a:
-                player.rect.x -= 10
+                player.rect.x -= 5
                 print("Move the character left")
                 if pygame.sprite.spritecollide(player, border_list, False):
-                    player.rect.x += 10
+                    player.rect.x += 5
             elif event.key == pygame.K_d:
-                player.rect.x += 10
+                player.rect.x += 5
                 print("Move the character right")
                 if pygame.sprite.spritecollide(player, border_list, False):
-                    player.rect.x -= 10
+                    player.rect.x -= 5
 
     #rect = pygame.Rect(rectX, rectY, 30, 30)
     collide = False
-    enemy_list = []
-    for i in range(5):
-        enemy_list.append(pygame.Rect(enemyX, enemyY + i*60, 30, 30))
-    #for i in range(5):
-    #    if collide == False:
-    #        collide = rect.colliderect(enemy_list[i])
-    #playerColor = (255, 0, 0) if collide else (255, 255, 255)
-    enemyColor = (255, 0, 0)
+    completed = False
+    coinsCollected = 0
+
+    if pygame.sprite.spritecollide(player, enemy_list, False, pygame.sprite.collide_circle):
+        collide = True
+    
+    if pygame.sprite.spritecollide(player, coins_list, True, pygame.sprite.collide_circle):
+        coinsCollected += 1
+
+    if pygame.sprite.spritecollide(player, finish, False) and coinsCollected == 9:
+        completed = True
+        print("Finished")
+
     screen.fill(BLUE)
-    #pygame.draw.rect(screen, playerColor, rect, 5, 5)
-    for i in range(5):
-        pygame.draw.rect(screen, enemyColor, enemy_list[i], 5, 5)
-    #for i in range(len(outline_list)):
-    #    pygame.draw.rect(screen, (0, 0, 0), outline_list[i])
     border_list.draw(screen)
+    for enemy in enemy_list:
+        screen.blit(enemy.image, enemy.rect)
+    for coin in coins_list:
+        screen.blit(coin.image, coin.rect)
     screen.blit(player.image, player.rect)
+    screen.blit(finish.image, finish.rect)
     pygame.display.flip()
 
     if collide:
