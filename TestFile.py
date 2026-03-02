@@ -16,6 +16,10 @@ GREEN = (144, 178, 112)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 
+border_thickness = 10
+right_border_edge = 400
+bottom_border_edge = 300
+
 # Set up the game window
 screen = pygame.display.set_mode((400, 300))
 pygame.display.set_caption("Hello Pygame")
@@ -32,13 +36,7 @@ pygame.time.set_timer(move_side_event, MOVE_SIDE)
 
 move_left = True
 
-rectX = 100
-rectY = 100
-#pygame.draw.rect(screen, WHITE, (rectX, rectY, 30, 30), 5, 5)
-#pygame.draw.rect(screen, RED, (enemyX, enemyY, 30, 30), 5, 5)
 pygame.display.flip()
-
-#outline_list = pygame.sprite.Group()
 
 class Border (pygame.sprite.Sprite):
     def __init__(self, color, width, height, x_pos, y_pos):
@@ -83,11 +81,11 @@ class Coins (pygame.sprite.Sprite):
 class Finish (pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.Surface((20, 280))
+        self.image = pygame.Surface((20, bottom_border_edge - (2 * border_thickness)))
         self.image.fill(GREEN)
         self.rect = self.image.get_rect()
-        self.rect.x = 370
-        self.rect.y = 10
+        self.rect.x = right_border_edge - 30
+        self.rect.y = border_thickness
 
 player = Player ()
 finish = Finish ()
@@ -103,22 +101,14 @@ for i in range(9):
     coin = Coins(250, 25 + i*30)
     coins_list.add(coin)
 
-border_thickness = 10
-right_border_edge = 300
-bottom_border_edge = 400
-border1 = Border(BLACK, bottom_border_edge, border_thickness, 0, 0)
-border2 = Border(BLACK, border_thickness, 300, 0, 0)
-border3 = Border(BLACK, border_thickness, 300, bottom_border_edge - border_thickness, 0)
-border4 = Border(BLACK, bottom_border_edge, border_thickness, 0, right_border_edge - border_thickness)
+border1 = Border(BLACK, right_border_edge, border_thickness, 0, 0)
+border2 = Border(BLACK, border_thickness, bottom_border_edge, 0, 0)
+border3 = Border(BLACK, right_border_edge, border_thickness, 0, bottom_border_edge - border_thickness)
+border4 = Border(BLACK, border_thickness, bottom_border_edge, right_border_edge - border_thickness, 0)
 border_list.add(border1)
 border_list.add(border2)
 border_list.add(border3)
 border_list.add(border4)
-
-#outline_list.add(pygame.Rect(0, 0, 400, 30))
-#outline_list.add(pygame.Rect(0, 0, 30, 300))
-#outline_list.add(pygame.Rect(370, 0, 30, 300))
-#outline_list.add(pygame.Rect(0, 270, 400, 30))
 
 up_text = my_font.render('Up!', True, (255, 255, 255))
 down_text = my_font.render('Down!', True, (255, 255, 255))
@@ -172,10 +162,7 @@ while running:
                 if pygame.sprite.spritecollide(player, border_list, False):
                     player.rect.x -= 5
 
-    #rect = pygame.Rect(rectX, rectY, 30, 30)
     collide = False
-    completed = False
-    
 
     if pygame.sprite.spritecollide(player, enemy_list, False, pygame.sprite.collide_circle):
         collide = True
@@ -185,7 +172,6 @@ while running:
         print(f"Coins: {coinsCollected}")
 
     if pygame.sprite.collide_rect(player, finish) and coinsCollected == 9:
-        completed = True
         print("Finished")
         playerWin = True
         time.sleep(2)
