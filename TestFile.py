@@ -125,12 +125,15 @@ down_text = my_font.render('Down!', True, (255, 255, 255))
 left_text = my_font.render('Left!', True, (255, 255, 255))
 right_text = my_font.render('Right!', True, (255, 255, 255))
 
+coinsCollected = 0
+playerWin = False
+
 # Game loop
 running = True
 while running:
     clock.tick(20)
     for event in pygame.event.get():
-        if event.type == move_side_event:
+        if event.type == move_side_event and playerWin == False:
             if move_left:
                 for enemy in enemy_list:
                     enemy.rect.x -= 5
@@ -148,22 +151,22 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_q:
                 running = False
-            if event.key == pygame.K_w:
+            if event.key == pygame.K_w or event.key == pygame.K_UP:
                 player.rect.y -= 5
                 print("Move the character forwards")
                 if pygame.sprite.spritecollide(player, border_list, False):
                     player.rect.y += 5
-            elif event.key == pygame.K_s:
+            elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                 player.rect.y += 5
                 print("Move the character backwards")
                 if pygame.sprite.spritecollide(player, border_list, False):
                     player.rect.y -= 5
-            elif event.key == pygame.K_a:
+            elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
                 player.rect.x -= 5
                 print("Move the character left")
                 if pygame.sprite.spritecollide(player, border_list, False):
                     player.rect.x += 5
-            elif event.key == pygame.K_d:
+            elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                 player.rect.x += 5
                 print("Move the character right")
                 if pygame.sprite.spritecollide(player, border_list, False):
@@ -172,17 +175,21 @@ while running:
     #rect = pygame.Rect(rectX, rectY, 30, 30)
     collide = False
     completed = False
-    coinsCollected = 0
+    
 
     if pygame.sprite.spritecollide(player, enemy_list, False, pygame.sprite.collide_circle):
         collide = True
     
     if pygame.sprite.spritecollide(player, coins_list, True, pygame.sprite.collide_circle):
         coinsCollected += 1
+        print(f"Coins: {coinsCollected}")
 
-    if pygame.sprite.spritecollide(player, finish, False) and coinsCollected == 9:
+    if pygame.sprite.collide_rect(player, finish) and coinsCollected == 9:
         completed = True
         print("Finished")
+        playerWin = True
+        time.sleep(2)
+        running = False
 
     screen.fill(BLUE)
     border_list.draw(screen)
