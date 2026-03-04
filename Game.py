@@ -32,13 +32,17 @@ def game(screen):
     screen.fill(BLUE)
 
     MOVE_SIDE = 100
+    MOVE_UP = 100
     clock = pygame.time.Clock()
 
     move_side_event = pygame.USEREVENT + 1
+    move_up_event = pygame.USEREVENT + 2
 
     pygame.time.set_timer(move_side_event, MOVE_SIDE)
+    pygame.time.set_timer(move_up_event, MOVE_UP)
 
     move_left = True
+    move_up = True
 
     pygame.display.flip()
 
@@ -61,6 +65,17 @@ def game(screen):
             self.rect.y = 50
         
     class Enemies (pygame.sprite.Sprite):
+        def __init__(self, x_pos, y_pos):
+            super().__init__()
+            self.image = pygame.Surface((10, 10), pygame.SRCALPHA)
+            self.rect = self.image.get_rect()
+            self.rect.x = x_pos
+            self.rect.y = y_pos
+            self.radius = 5
+
+            pygame.draw.circle(self.image, RED, (10//2, 10//2), 5)
+    
+    class EnemiesUp (pygame.sprite.Sprite):
         def __init__(self, x_pos, y_pos):
             super().__init__()
             self.image = pygame.Surface((10, 10), pygame.SRCALPHA)
@@ -95,11 +110,16 @@ def game(screen):
     finish = Finish ()
     border_list = pygame.sprite.Group()
     enemy_list = pygame.sprite.Group()
+    enemies_up = pygame.sprite.Group()
     coins_list = pygame.sprite.Group()
 
     for i in range(9):
         enemy = Enemies(300, 25 + i*30)
         enemy_list.add(enemy)
+
+    for i in range(5):
+        enemyUp = EnemiesUp(60 + i*75, 200)
+        enemies_up.add(enemyUp)
 
     for i in range(9):
         coin = Coins(250, 25 + i*30)
@@ -109,10 +129,24 @@ def game(screen):
     border2 = Border(BLACK, border_thickness, bottom_border_edge, 0, 0)
     border3 = Border(BLACK, right_border_edge, border_thickness, 0, bottom_border_edge - border_thickness)
     border4 = Border(BLACK, border_thickness, bottom_border_edge, right_border_edge - border_thickness, 0)
+    border5 = Border(BLACK, border_thickness * 3, 50, right_border_edge - 250, 0)
+    border6 = Border(BLACK, border_thickness * 3, 300, right_border_edge - 250, 75)
+    border7 = Border(BLACK, border_thickness * 3, 75, right_border_edge - 300, 0)
+    border8 = Border(BLACK, border_thickness * 3, 275, right_border_edge - 300, 100)
+    border9 = Border(BLACK, border_thickness * 3, 175, right_border_edge - 100, 0)
+    border10 = Border(BLACK, border_thickness * 3, 75, right_border_edge - 100, 200)
+
+
     border_list.add(border1)
     border_list.add(border2)
     border_list.add(border3)
     border_list.add(border4)
+    border_list.add(border5)
+    border_list.add(border6)
+    border_list.add(border7)
+    border_list.add(border8)
+    border_list.add(border9)
+    border_list.add(border10)
 
     up_text = my_font.render('Up!', True, (255, 255, 255))
     down_text = my_font.render('Down!', True, (255, 255, 255))
@@ -140,6 +174,20 @@ def game(screen):
                         move_left = False
                     if enemy.rect.x > 350:
                         move_left = True
+            
+            if event.type == move_up_event and playerWin == False:
+                if move_up:
+                    for enemy in enemies_up:
+                        enemy.rect.y -= 5
+                else:
+                    for enemy in enemies_up:
+                        enemy.rect.y += 5
+
+                for enemy in enemies_up:
+                    if enemy.rect.y < 50:
+                        move_up = False
+                    if enemy.rect.y > 250:
+                        move_up = True
 
 
             if event.type == pygame.KEYDOWN:
@@ -170,6 +218,8 @@ def game(screen):
 
         if pygame.sprite.spritecollide(player, enemy_list, False, pygame.sprite.collide_circle):
             collide = True
+        if pygame.sprite.spritecollide(player, enemies_up, False, pygame.sprite.collide_circle):
+            collide = True
         
         if pygame.sprite.spritecollide(player, coins_list, True, pygame.sprite.collide_circle):
             coinsCollected += 1
@@ -184,6 +234,8 @@ def game(screen):
         screen.fill(BLUE)
         border_list.draw(screen)
         for enemy in enemy_list:
+            screen.blit(enemy.image, enemy.rect)
+        for enemy in enemies_up:
             screen.blit(enemy.image, enemy.rect)
         for coin in coins_list:
             screen.blit(coin.image, coin.rect)
